@@ -1,0 +1,3 @@
+# Ignore output and job folders
+out/
+jobs/
