@@ -9,7 +9,7 @@
 #SBATCH --time 0-10:30:00			### limit the time of job running. Make sure it is not greater than the partition time limit!! Format: D-H:MM:SS
 #SBATCH --job-name my_job			### name of the job
 #SBATCH --output job-%J.out			### output log for running job - %J for job number
-#SBATCH --gpus=1				### number of GPUs, allocating more than 1 requires IT team's permission. Example to request 3090 gpu: #SBATCH --gpus=rtx_3090:1
+#SBATCH --gpus=rtx_4090:1				### number of GPUs, allocating more than 1 requires IT team's permission. Example to request 3090 gpu: #SBATCH --gpus=rtx_3090:1
 
 # Note: the following 4 lines are commented out
 ##SBATCH --mail-user=liranitz@post.bgu.ac.il	### user's email for sending job status messages
@@ -27,18 +27,26 @@ echo -e "SLURM_JOB_NODELIST:\t" $SLURM_JOB_NODELIST "\n\n"
 
 DATASET_PATH="/home/liranitz/LiranDeepFakeProject/FakeDetectionWithFlorance/GenImageDataset"
 FORGED_DATASET_PATH="/sise/mickyfi-group/liranazr/data/forged_images/AutoSplice/split/test" # If needed, use forged_data flag in the script
+FEATURE_OUT_ROOT="/home/liranitz/big_data_proj_dir/FinalProject/out/feature_map_analysis/xception"
 
-OUT_DIR="/home/liranitz/big_data_proj_dir/FinalProject/out/feature_map_analysis"
+EMBEDDINGS_DIR="/home/liranitz/big_data_proj_dir/FinalProject/out/embeddings_from_xception"
+OUT_DIR="/home/liranitz/big_data_proj_dir/FinalProject/out/xception_outputs"
+FEATURE_OUT_ROOT="/home/liranitz/big_data_proj_dir/FinalProject/out/feature_map_analysis/xception"
 BATCH_SIZE=64
 
 module load anaconda
 source activate wt_conv_env
 
-python /home/liranitz/big_data_proj_dir/FinalProject/src/feature_map_analysis.py \
-  --out_dir $OUT_DIR \
-  -- models vit_base_patch16_224 \
-  --per_model_samples 100 \
-  --max_channels_plot 8 \
-  --forged_data $FORGED_DATASET_PATH
-  # --data_root $DATASET_PATH \
-  # --models resnet50 xception \
+python /home/liranitz/big_data_proj_dir/FinalProject/src/compare_embeddings_vs_features.py \
+  --embeddings_dir $EMBEDDINGS_DIR \
+  --feature_root $FEATURE_OUT_ROOT \
+  --feature_model xception \
+  --feature_layer stage1 \
+  --only_groups biggan sdv5 \
+  --sample_per_group 300 \
+  --tsne_iter 3000 \
+  --tsne_perp 30 \
+  --out_dir "/home/liranitz/big_data_proj_dir/FinalProject/out/xception_outputs/embeddings_vs_features_biggan_sdv5"
+
+
+  # --only_groups REAL FAKE adm biggan glide sdv5 vqdm wukong \

@@ -26,19 +26,20 @@ echo -e "SLURM_JOB_NODELIST:\t" $SLURM_JOB_NODELIST "\n\n"
 ### Start your code below ####
 
 DATASET_PATH="/home/liranitz/LiranDeepFakeProject/FakeDetectionWithFlorance/GenImageDataset"
-FORGED_DATASET_PATH="/sise/mickyfi-group/liranazr/data/forged_images/AutoSplice/split/test" # If needed, use forged_data flag in the script
-
-OUT_DIR="/home/liranitz/big_data_proj_dir/FinalProject/out/feature_map_analysis"
+MODEL="vit"
+EMBEDDINGS_DIR="/home/liranitz/big_data_proj_dir/FinalProject/out/embeddings_from_${MODEL}"
+OUT_DIR="/home/liranitz/big_data_proj_dir/FinalProject/out/${MODEL}_outputs"
 BATCH_SIZE=64
 
 module load anaconda
 source activate wt_conv_env
 
-python /home/liranitz/big_data_proj_dir/FinalProject/src/feature_map_analysis.py \
-  --out_dir $OUT_DIR \
-  -- models vit_base_patch16_224 \
-  --per_model_samples 100 \
-  --max_channels_plot 8 \
-  --forged_data $FORGED_DATASET_PATH
-  # --data_root $DATASET_PATH \
-  # --models resnet50 xception \
+## Running the t-SNE analysis script ###
+
+python /home/liranitz/big_data_proj_dir/FinalProject/utils/combine_images.py \
+  --input_images /home/liranitz/big_data_proj_dir/FinalProject/out/xception_outputs/cka_stage1.png /home/liranitz/big_data_proj_dir/FinalProject/out/xception_outputs/cka_stage2.png /home/liranitz/big_data_proj_dir/FinalProject/out/xception_outputs/cka_stage3.png \
+  --output_image_name /home/liranitz/big_data_proj_dir/FinalProject/out/figures/cka_on_xception_embedding_stages.png \
+  --cols 4 \
+  --width 16 \
+  --height 10 \
+  --no_show

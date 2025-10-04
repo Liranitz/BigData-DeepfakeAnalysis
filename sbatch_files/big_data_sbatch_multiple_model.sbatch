@@ -26,7 +26,7 @@ echo -e "SLURM_JOB_NODELIST:\t" $SLURM_JOB_NODELIST "\n\n"
 ### Start your code below ####
 
 DATASET_PATH="/home/liranitz/LiranDeepFakeProject/FakeDetectionWithFlorance/GenImageDataset"
-EMBEDDINGS_DIR="/home/liranitz/big_data_proj_dir/FinalProject/out/embeddings_from_vit"
+EMBEDDINGS_DIR="/home/liranitz/big_data_proj_dir/FinalProject/out/embeddings_from_xception"
 BATCH_SIZE=64
 
 module load anaconda
@@ -43,18 +43,14 @@ source activate wt_conv_env
 #   --device cuda
 
 python /home/liranitz/big_data_proj_dir/FinalProject/src/extract_embedding_multiple.py \
-  --data_root $DATASET_PATH \
   --out_dir $EMBEDDINGS_DIR \
-  --model_name vit_base_patch16_224 \
+  --model_name xception \
   --pretrained \
   --batch_size 64 \
   --num_workers 4 \
-  --device cuda
-
-
-
-
-
+  --device cuda \
+  --forged_data "/sise/mickyfi-group/liranazr/data/forged_images/AutoSplice/split/test"
+  # --data_root $DATASET_PATH \
 
 ### Running the t-SNE analysis script ###
 

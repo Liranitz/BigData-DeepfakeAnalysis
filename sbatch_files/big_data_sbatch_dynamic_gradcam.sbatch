@@ -27,18 +27,25 @@ echo -e "SLURM_JOB_NODELIST:\t" $SLURM_JOB_NODELIST "\n\n"
 
 DATASET_PATH="/home/liranitz/LiranDeepFakeProject/FakeDetectionWithFlorance/GenImageDataset"
 FORGED_DATASET_PATH="/sise/mickyfi-group/liranazr/data/forged_images/AutoSplice/split/test" # If needed, use forged_data flag in the script
+FEATURE_OUT_ROOT="/home/liranitz/big_data_proj_dir/FinalProject/out/feature_map_analysis/xception"
 
-OUT_DIR="/home/liranitz/big_data_proj_dir/FinalProject/out/feature_map_analysis"
+EMBEDDINGS_DIR="/home/liranitz/big_data_proj_dir/FinalProject/out/embeddings_from_xception"
+OUT_DIR="/home/liranitz/big_data_proj_dir/FinalProject/out/xception_outputs"
+FEATURE_OUT_ROOT="/home/liranitz/big_data_proj_dir/FinalProject/out/feature_map_analysis/xception"
 BATCH_SIZE=64
 
 module load anaconda
 source activate wt_conv_env
 
-python /home/liranitz/big_data_proj_dir/FinalProject/src/feature_map_analysis.py \
-  --out_dir $OUT_DIR \
-  -- models vit_base_patch16_224 \
-  --per_model_samples 100 \
-  --max_channels_plot 8 \
-  --forged_data $FORGED_DATASET_PATH
-  # --data_root $DATASET_PATH \
-  # --models resnet50 xception \
+DATASET_PATH="/home/liranitz/LiranDeepFakeProject/FakeDetectionWithFlorance/GenImageDataset"
+FORGED_DATASET_PATH="/sise/mickyfi-group/liranazr/data/forged_images/AutoSplice/split/test" # If needed, use forged_data flag in the script
+
+python /home/liranitz/big_data_proj_dir/FinalProject/src/gradcam_dynamic.py \
+  --data_root $DATASET_PATH \
+  --forged_data $FORGED_DATASET_PATH \
+  --per_group 40 \
+  --models resnet50 xception \
+  --out_dir "/home/liranitz/big_data_proj_dir/FinalProject/out/cam_out"
+
+
+  # --only_groups REAL FAKE adm biggan glide sdv5 vqdm wukong \
