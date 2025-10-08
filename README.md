@@ -50,7 +50,7 @@ FinalProject/
   ```bash
   python src/analyze_embedding_with_tsne.py --embeddings_dir /path/to/output_embeddings --mode combined
   ```
-  - See `--help` for all options (sampling, perplexity, output dir, etc).
+
 
 ### 3. Other Analysis Scripts
 - `analyze_embedding_with_pca.py`: PCA-based visualization.
@@ -71,14 +71,6 @@ FinalProject/
    ```
 3. **Explore Other Analyses:**
    - Try PCA, feature map analysis, or pairwise comparisons as needed.
-
-## Requirements
-- Python 3.8+
-- Install dependencies:
-  ```bash
-  pip install -r requirements.txt
-  ```
-- For GPU acceleration, ensure PyTorch is installed with CUDA support.
 
 ## Notes
 - Data should be organized as:
