@@ -1,3 +1,4 @@
+# src/feature_map_analysis_vit_ready.py
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
@@ -36,6 +37,7 @@ def load_rgb(path: Path) -> Image.Image:
     return Image.open(path).convert("RGB")
 
 def select_channels(x: torch.Tensor, k: int = 8) -> List[int]:
+    # x shape: [C, H, W]
     c = x.shape[0]
     if k >= c:
         return list(range(c))
@@ -83,6 +85,11 @@ class BackboneSpec:
     batch_size: int = 16
 
 class FeatureExtractor:
+    """
+    Works for CNNs and ViTs through timm features_only.
+    For ViTs, features_only exposes spatial feature maps after patch embedding
+    and selected transformer blocks. Shapes are still [B, C, H, W].
+    """
     def __init__(self, spec: BackboneSpec, device: torch.device):
         self.spec = spec
         self.device = device
@@ -104,13 +111,15 @@ class FeatureExtractor:
 
 # ----------------------------
 # Registry of supported models
-# add new models here and they become available via --models
+# Add new models here and they become available via --models
 # ----------------------------
 SPECS: Dict[str, BackboneSpec] = {
-    "resnet50": BackboneSpec(name="resnet50", timm_id="resnet50", out_indices=(2, 3, 4)),
+    "resnet50": BackboneSpec(name="resnet50", timm_id="resnet50", out_indices=(1, 2, 3)),
     "xception": BackboneSpec(name="xception", timm_id="xception", out_indices=(1, 2, 3)),
-    # example to extend:
-    # "tf_efficientnet_b0": BackboneSpec(name="tf_efficientnet_b0", timm_id="tf_efficientnet_b0", out_indices=(2, 3, 4)),
+    # ViT base - pick mid to deep blocks. For vit_base_patch16_224, valid out_indices include 1..11.
+    "vit_base_patch16_224": BackboneSpec(name="vit_base_patch16_224", timm_id="vit_base_patch16_224", out_indices=(1, 5, 9)),
+    # You can easily add more ViTs, for example:
+    # "vit_small_patch16_224": BackboneSpec(name="vit_small_patch16_224", timm_id="vit_small_patch16_224", out_indices=(4, 7, 11)),
 }
 
 def build_extractors(requested: Optional[List[str]], device: torch.device) -> Dict[str, FeatureExtractor]:
@@ -158,10 +167,9 @@ def analyze(
 ) -> None:
     device = torch.device(device_str)
     extractors = build_extractors(models_to_run, device)
-
     rng = np.random.default_rng(seed)
 
-    # choose source
+    # Option A: REAL/FAKE dataset
     if forged_data is not None:
         if not forged_data.exists() or not forged_data.is_dir():
             print(f"--forged_data path does not exist or is not a directory: {forged_data}")
@@ -189,14 +197,16 @@ def analyze(
                     base_dir.mkdir(parents=True, exist_ok=True)
                     save_original(x_t, base_dir / "input_transformed.png")
                     for lname, fmap in zip(layer_names, feats):
-                        save_feature_grid(fmap, base_dir / f"{lname}_grid.png",
-                                          title=f"{arch_name} - {group_name} - {lname}",
-                                          max_channels=max_channels_plot)
+                        save_feature_grid(
+                            fmap, base_dir / f"{lname}_grid.png",
+                            title=f"{arch_name} - {group_name} - {lname}",
+                            max_channels=max_channels_plot
+                        )
                         np.savez_compressed(base_dir / f"{lname}.npz", fmap=fmap.numpy())
         print(f"Done. Outputs saved under {out_root}")
         return
 
-    # fallback to GenImage layout
+    # Option B: GenImage layout
     if data_root is None:
         print("either --forged_data must be provided or --data_root must be set")
         return
@@ -234,9 +244,11 @@ def analyze(
                 base_dir.mkdir(parents=True, exist_ok=True)
                 save_original(x_t, base_dir / "input_transformed.png")
                 for lname, fmap in zip(layer_names, feats):
-                    save_feature_grid(fmap, base_dir / f"{lname}_grid.png",
-                                      title=f"{arch_name} - {gen_name} - {lname}",
-                                      max_channels=max_channels_plot)
+                    save_feature_grid(
+                        fmap, base_dir / f"{lname}_grid.png",
+                        title=f"{arch_name} - {gen_name} - {lname}",
+                        max_channels=max_channels_plot
+                    )
                     np.savez_compressed(base_dir / f"{lname}.npz", fmap=fmap.numpy())
     print(f"Done. Outputs saved under {out_root}")
 
@@ -246,12 +258,12 @@ def analyze(
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data_root", type=str, required=False,
-                    help="Root folder that contains imagenet*/train/ai. Optional if --forged_data is set")
+                    help="Root with imagenet*/train/ai. Optional if --forged_data is set")
     ap.add_argument("--out_dir", default="out", type=str, help="Output root directory")
     ap.add_argument("--per_model_samples", default=100, type=int,
                     help="How many images to sample per generator model")
     ap.add_argument("--models", nargs="*", default=None,
-                    help="Subset of models to load. If omitted, load all supported. Example: --models resnet50")
+                    help="Subset of models to load. If omitted, load all supported. Examples: --models resnet50 xception vit_base_patch16_224")
     ap.add_argument("--seed", default=42, type=int)
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu", type=str)
     ap.add_argument("--max_channels_plot", default=8, type=int,

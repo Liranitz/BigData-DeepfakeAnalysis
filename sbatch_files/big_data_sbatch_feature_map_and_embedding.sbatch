@@ -9,7 +9,8 @@
 #SBATCH --time 0-10:30:00			### limit the time of job running. Make sure it is not greater than the partition time limit!! Format: D-H:MM:SS
 #SBATCH --job-name my_job			### name of the job
 #SBATCH --output job-%J.out			### output log for running job - %J for job number
-#SBATCH --gpus=rtx_4090:1				### number of GPUs, allocating more than 1 requires IT team's permission. Example to request 3090 gpu: #SBATCH --gpus=rtx_3090:1
+#SBATCH --gpus=rtx_6000:1				### number of GPUs, allocating more than 1 requires IT team's permission. Example to request 3090 gpu: #SBATCH --gpus=rtx_3090:1
+#SBATCH --partition rtx6000 --qos orenfr
 
 # Note: the following 4 lines are commented out
 ##SBATCH --mail-user=liranitz@post.bgu.ac.il	### user's email for sending job status messages
@@ -42,11 +43,12 @@ python /home/liranitz/big_data_proj_dir/FinalProject/src/compare_embeddings_vs_f
   --feature_root $FEATURE_OUT_ROOT \
   --feature_model xception \
   --feature_layer stage1 \
-  --only_groups biggan sdv5 \
+  --clf xgboost \
+  --only_groups REAL FAKE \
   --sample_per_group 300 \
   --tsne_iter 3000 \
   --tsne_perp 30 \
-  --out_dir "/home/liranitz/big_data_proj_dir/FinalProject/out/xception_outputs/embeddings_vs_features_biggan_sdv5"
+  --out_dir "/home/liranitz/big_data_proj_dir/FinalProject/out/xception_outputs/embeddings_vs_features_fake_vs_real_xgboost"
 
 
   # --only_groups REAL FAKE adm biggan glide sdv5 vqdm wukong \

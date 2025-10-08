@@ -27,7 +27,19 @@ def show_images(image_paths, output_image_name=None, cols=3, figsize=(12, 8), sh
 
         plt.subplot(rows, cols, i + 1)
         plt.imshow(img)
-        plt.axis("off")  # hide axes and titles
+        plt.axis("off")
+
+        # Extract folder name to use as title
+        parts = img_path.split("/")
+        title = parts[-2] if len(parts) > 1 else "Unknown"
+
+        # Only rename REAL / FAKE — keep others as is
+        if title.upper() == "REAL":
+            title = "AutoSplice-Real"
+        elif title.upper() == "FAKE":
+            title = "AutoSplice-Forged"
+
+        plt.title(title, fontsize=10, pad=3)
 
     plt.tight_layout(pad=0.2)
 

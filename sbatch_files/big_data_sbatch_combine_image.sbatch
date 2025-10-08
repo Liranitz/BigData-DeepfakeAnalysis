@@ -9,7 +9,7 @@
 #SBATCH --time 0-10:30:00			### limit the time of job running. Make sure it is not greater than the partition time limit!! Format: D-H:MM:SS
 #SBATCH --job-name my_job			### name of the job
 #SBATCH --output job-%J.out			### output log for running job - %J for job number
-#SBATCH --gpus=1				### number of GPUs, allocating more than 1 requires IT team's permission. Example to request 3090 gpu: #SBATCH --gpus=rtx_3090:1
+#SBATCH --gpus=0			### number of GPUs, allocating more than 1 requires IT team's permission. Example to request 3090 gpu: #SBATCH --gpus=rtx_3090:1
 
 # Note: the following 4 lines are commented out
 ##SBATCH --mail-user=liranitz@post.bgu.ac.il	### user's email for sending job status messages
@@ -37,8 +37,8 @@ source activate wt_conv_env
 ## Running the t-SNE analysis script ###
 
 python /home/liranitz/big_data_proj_dir/FinalProject/utils/combine_images.py \
-  --input_images /home/liranitz/big_data_proj_dir/FinalProject/out/xception_outputs/cka_stage1.png /home/liranitz/big_data_proj_dir/FinalProject/out/xception_outputs/cka_stage2.png /home/liranitz/big_data_proj_dir/FinalProject/out/xception_outputs/cka_stage3.png \
-  --output_image_name /home/liranitz/big_data_proj_dir/FinalProject/out/figures/cka_on_xception_embedding_stages.png \
+  --input_images /home/liranitz/big_data_proj_dir/FinalProject/out/xception_outputs/embeddings_concat_features_fake_vs_real_lr/tsne_concat.png /home/liranitz/big_data_proj_dir/FinalProject/out/xception_outputs/embeddings_concat_features_fake_vs_real_lr/tsne_embeddings.png /home/liranitz/big_data_proj_dir/FinalProject/out/xception_outputs/embeddings_concat_features_fake_vs_real_lr/tsne_featuremaps.png \
+  --output_image_name /home/liranitz/big_data_proj_dir/FinalProject/out/figures/xception_embedding_vs_feature_vs_concat_maps_real_fake.png \
   --cols 4 \
   --width 16 \
   --height 10 \
